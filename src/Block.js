@@ -110,6 +110,7 @@ export default class Block extends Component {
                       <video
                         src={this.props.data.videoSrc}
                         ref={(video) => this.video = video}
+                        controls
                         className={css(styles.video, this.state.focus && styles.focus)}
                         style={{width:this.state.width}}
                         onClick={readOnly ? null : this.handleClick.bind(this)}
