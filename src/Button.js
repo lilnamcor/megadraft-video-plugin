@@ -13,11 +13,23 @@ import Modal from "react-modal";
 import {StyleSheet, css} from 'aphrodite';
 
 import FaTimes from 'react-icons/lib/fa/times-circle';
+import Immutable from "immutable";
 
 import Icon from "./icon.js";
 import constants from "./constants";
 import {insertDataBlock} from "megadraft";
+import { genKey, EditorState, ContentState, ContentBlock } from "draft-js";
 
+// IPFS Config
+import { ipfsConfig, IPFS_ADDRESS } from './ipfs-config';
+import { uploadFiles } from './ipfs-helper';
+
+const {
+  List,
+  Map
+} = Immutable;
+
+const IPFS = window.Ipfs;
 
 export default class Button extends Component {
   constructor(props) {
@@ -30,15 +42,74 @@ export default class Button extends Component {
   }
 
   onDrop(acceptedFiles, rejectedFiles) {
-    if (acceptedFiles.length) {
-      const data = {
+    if (acceptedFiles.length > 0) {
+      const loader = {
         type: constants.PLUGIN_TYPE,
-        videoFile: acceptedFiles[0],
-        videoSrc: acceptedFiles[0].preview,
+        load: true,
       }
-      this.props.onChange(insertDataBlock(this.props.editorState, data));
+      this.props.onChange(insertDataBlock(this.props.editorState, loader));
+      uploadFiles(acceptedFiles, this.node)
+      .then((result) => {
+        var videoHash = result[0].hash;
+        const data = {
+          type: constants.PLUGIN_TYPE,
+          videoPreview: acceptedFiles[0].preview,
+          videoHash: videoHash,
+          load: false,
+        }
+        var editorState = this.props.editorState;
+        // var blocks = editorState.getCurrentContent().getBlocksAsArray();
+
+        // var loadIndex = 0;
+        // var replaceKey = '';
+        // for (var i = 0; i < blocks.length; i++) {
+        //   if (blocks[i].getType() === 'atomic' && blocks[i].getData().get('load')) {
+        //     loadIndex = i;
+        //     replaceKey = blocks[i].getKey();
+        //     break;
+        //   }
+        // }
+        const _contentState = editorState.getCurrentContent();
+        var blockMap = _contentState.getBlockMap()
+
+        const newContentState = blockMap.reduce((contentState, block) => {
+          // const block = contentState.getBlockForKey(blockKey);
+          if (block.getType() === 'atomic' && block.getData().get('load')) {
+            var blockKey = block.getKey();
+            var videoBlock = new ContentBlock({
+              key: genKey(),
+              type: "atomic",
+              text: "",
+              characterList: List(),
+              data: new Map(data)
+            });
+
+            return contentState.merge({
+              blockMap: blockMap.set(
+                blockKey,
+                videoBlock
+              ),
+            });
+          } else {
+            return contentState;
+          }
+        }, _contentState);
+
+        // insertDataBlock(this.props.editorState, data);
+        // blocks[loadIndex] = videoBlock;
+        // var contentState = ContentState.createFromBlockArray(blocks);
+        var newEditorState = EditorState.push(this.props.editorState, newContentState, 'replace-load-with-video');
+        // var newEditorState = EditorState.createWithContent(contentState, this.props.editorState.getDecorator());
+        this.props.onChange(newEditorState);
+      });
     } else {
       this.setState({open: true})
+    }
+  }
+
+  componentDidMount() {
+    if (IPFS) {
+      this.node = new IPFS(ipfsConfig);
     }
   }
 
@@ -48,7 +119,7 @@ export default class Button extends Component {
 
   render() {
     return (
-      <div>
+      <div className={css(styles.videoButton)}>
         <Dropzone
           className={this.props.className}
           onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles)}
@@ -93,6 +164,9 @@ var styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'black',
     zIndex: '2',
+  },
+  videoButton: {
+    marginLeft: '2px',
   },
   content: {
     position: 'absolute',

@@ -15,6 +15,13 @@ import VideoPopover from './VideoPopover.js';
 import {MegadraftPlugin, MegadraftIcons} from "megadraft";
 
 import {StyleSheet, css} from 'aphrodite';
+import Loader from 'halogen/PulseLoader';
+
+// IPFS Config
+import { ipfsConfig, IPFS_ADDRESS } from './ipfs-config';
+import { getFiles } from './ipfs-helper';
+
+const IPFS = window.Ipfs;
 
 const {BlockContent, BlockData, BlockInput, CommonBlock} = MegadraftPlugin;
 
@@ -85,6 +92,25 @@ export default class Block extends Component {
     if (readOnly) {
       document.addEventListener('mousedown', this.handleClickOut);
     }
+
+    if (IPFS) {
+      this.node = new IPFS(ipfsConfig);
+      this.node.on('ready', () => {
+        this.setState({
+          ipfsConnected: true,
+        });
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.ipfsConnected && !prevState.ipfsConnected) {
+      getFiles(this.props.data.videoHash, this.node).then((blobUrl) => {
+        this.setState({
+          blobUrl: blobUrl[0],
+        });
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -97,43 +123,43 @@ export default class Block extends Component {
     var readOnly = this.props.blockProps.getInitialReadOnly();
     return (
       <div className={css(styles.inputWrapper)}>
-          {this.props.data.videoSrc
-            ?   <div className="block">
-                  <div className={css(styles.videoDiv)}>
-                    <Popover
-                      className={css(styles.popover)}
-                      body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
-                      preferPlace='above'
-                      place="column"
-                      onOuterAction={this.handleClick.bind(this)}
-                      isOpen={this.state.open}>
-                      <video
-                        src={this.props.data.videoSrc}
-                        ref={(video) => this.video = video}
-                        controls
-                        className={css(styles.video, this.state.focus && styles.focus)}
-                        style={{width:this.state.width}}
-                        onClick={readOnly ? null : this.handleClick.bind(this)}
-                      />
-                    </Popover>
-                  </div>
-                  {readOnly && this.props.data.caption || !readOnly
-                    ?   <TextAreaAutoSize
-                          onFocus={this._clearPlaceholder}
-                          onBlur={this._putPlaceholder}
-                          id='caption'
-                          rows={1}
-                          disabled={readOnly}
-                          placeholder={this.state.placeholder}
-                          className={css(styles.input)}
-                          onChange={this._handleCaptionChange}
-                          value={this.props.data.caption}
-                        />
-                    :   null
-                  }
-                </div>
-          :   null
-        }
+        <div className="block">
+          <div className={css(styles.videoDiv)}>
+            <Popover
+              className={css(styles.popover)}
+              body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
+              preferPlace='above'
+              place="column"
+              onOuterAction={this.handleClick.bind(this)}
+              isOpen={this.state.open}>
+              {this.state.blobUrl
+                ?   <video
+                      src={this.state.blobUrl}
+                      ref={(video) => this.video = video}
+                      controls
+                      className={css(styles.video, this.state.focus && styles.focus)}
+                      style={{width:this.state.width}}
+                      onClick={readOnly ? null : this.handleClick.bind(this)}
+                    />
+                :   <Loader color="#26A65B" size="16px" margin="4px" />
+              }
+            </Popover>
+          </div>
+          {!this.props.data.load && (readOnly && this.props.data.caption || !readOnly)
+            ?   <TextAreaAutoSize
+                  onFocus={this._clearPlaceholder}
+                  onBlur={this._putPlaceholder}
+                  id='caption'
+                  rows={1}
+                  disabled={readOnly}
+                  placeholder={this.state.placeholder}
+                  className={css(styles.input)}
+                  onChange={this._handleCaptionChange}
+                  value={this.props.data.caption}
+                />
+            :   null
+          }
+        </div>
       </div>
     );
   }

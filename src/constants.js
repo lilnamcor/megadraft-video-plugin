@@ -5,6 +5,6 @@
  */
 
 export default {
-  PLUGIN_NAME: "megadraft-image-plugin",
-  PLUGIN_TYPE: "megadraft-image-plugin"
+  PLUGIN_NAME: "megadraft-video-plugin",
+  PLUGIN_TYPE: "megadraft-video-plugin"
 };
