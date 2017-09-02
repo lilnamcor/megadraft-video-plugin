@@ -104,7 +104,7 @@ export default class Block extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.ipfsConnected && !prevState.ipfsConnected) {
+    if (this.state.ipfsConnected && this.props.data.videoHash && !this.state.blobUrl) {
       getFiles(this.props.data.videoHash, this.node).then((blobUrl) => {
         this.setState({
           blobUrl: blobUrl[0],
@@ -125,27 +125,27 @@ export default class Block extends Component {
       <div className={css(styles.inputWrapper)}>
         <div className="block">
           <div className={css(styles.videoDiv)}>
-            <Popover
-              className={css(styles.popover)}
-              body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
-              preferPlace='above'
-              place="column"
-              onOuterAction={this.handleClick.bind(this)}
-              isOpen={this.state.open}>
-              {this.state.blobUrl
-                ?   <video
-                      src={this.state.blobUrl}
-                      ref={(video) => this.video = video}
-                      controls
-                      className={css(styles.video, this.state.focus && styles.focus)}
-                      style={{width:this.state.width}}
-                      onClick={readOnly ? null : this.handleClick.bind(this)}
-                    />
+            {this.state.blobUrl
+                ?   <Popover
+                      className={css(styles.popover)}
+                      body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
+                      preferPlace='above'
+                      place="column"
+                      onOuterAction={this.handleClick.bind(this)}
+                      isOpen={this.state.open}>
+                        <video
+                          src={this.state.blobUrl}
+                          ref={(video) => this.video = video}
+                          controls
+                          className={css(styles.video, this.state.focus && styles.focus)}
+                          style={{width:this.state.width}}
+                          onClick={readOnly ? null : this.handleClick.bind(this)}
+                        />
+                    </Popover>
                 :   <Loader color="#26A65B" size="16px" margin="4px" />
               }
-            </Popover>
           </div>
-          {!this.props.data.load && (readOnly && this.props.data.caption || !readOnly)
+          {this.state.blobUrl && (readOnly && this.props.data.caption || !readOnly)
             ?   <TextAreaAutoSize
                   onFocus={this._clearPlaceholder}
                   onBlur={this._putPlaceholder}

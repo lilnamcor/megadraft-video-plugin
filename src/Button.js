@@ -18,7 +18,7 @@ import Immutable from "immutable";
 import Icon from "./icon.js";
 import constants from "./constants";
 import {insertDataBlock} from "megadraft";
-import { genKey, EditorState, ContentState, ContentBlock } from "draft-js";
+import { genKey, EditorState, ContentState, ContentBlock, SelectionState, Modifier } from "draft-js";
 
 // IPFS Config
 import { ipfsConfig, IPFS_ADDRESS } from './ipfs-config';
@@ -58,42 +58,45 @@ export default class Button extends Component {
           load: false,
         }
         var editorState = this.props.editorState;
-        // var blocks = editorState.getCurrentContent().getBlocksAsArray();
-
-        // var loadIndex = 0;
-        // var replaceKey = '';
-        // for (var i = 0; i < blocks.length; i++) {
-        //   if (blocks[i].getType() === 'atomic' && blocks[i].getData().get('load')) {
-        //     loadIndex = i;
-        //     replaceKey = blocks[i].getKey();
-        //     break;
-        //   }
-        // }
         const _contentState = editorState.getCurrentContent();
-        var blockMap = _contentState.getBlockMap()
+        var blocks = editorState.getCurrentContent().getBlocksAsArray();
 
-        const newContentState = blockMap.reduce((contentState, block) => {
-          // const block = contentState.getBlockForKey(blockKey);
-          if (block.getType() === 'atomic' && block.getData().get('load')) {
-            var blockKey = block.getKey();
-            var videoBlock = new ContentBlock({
-              key: genKey(),
-              type: "atomic",
-              text: "",
-              characterList: List(),
-              data: new Map(data)
-            });
-
-            return contentState.merge({
-              blockMap: blockMap.set(
-                blockKey,
-                videoBlock
-              ),
-            });
-          } else {
-            return contentState;
+        var loadIndex = 0;
+        var replaceKey = '';
+        for (var i = 0; i < blocks.length; i++) {
+          if (blocks[i].getType() === 'atomic' && blocks[i].getData().get('load')) {
+            loadIndex = i;
+            replaceKey = blocks[i].getKey();
+            break;
           }
-        }, _contentState);
+        }
+        var selectionState = SelectionState.createEmpty(replaceKey);
+        var newContentState = Modifier.setBlockData(_contentState, selectionState, data);
+
+        // var blockMap = _contentState.getBlockMap()
+
+        // const newContentState = blockMap.reduce((contentState, block) => {
+        //   // const block = contentState.getBlockForKey(blockKey);
+        //   if (block.getType() === 'atomic' && block.getData().get('load')) {
+        //     var blockKey = block.getKey();
+        //     var videoBlock = new ContentBlock({
+        //       key: genKey(),
+        //       type: "atomic",
+        //       text: "",
+        //       characterList: List(),
+        //       data: new Map(data)
+        //     });
+
+        //     return contentState.merge({
+        //       blockMap: blockMap.set(
+        //         blockKey,
+        //         videoBlock
+        //       ),
+        //     });
+        //   } else {
+        //     return contentState;
+        //   }
+        // }, _contentState);
 
         // insertDataBlock(this.props.editorState, data);
         // blocks[loadIndex] = videoBlock;
