@@ -20,6 +20,7 @@ import Loader from 'halogen/PulseLoader';
 
 const {BlockContent, BlockData, BlockInput, CommonBlock} = MegadraftPlugin;
 
+import { genKey, EditorState, ContentState, ContentBlock, SelectionState, Modifier } from "draft-js";
 
 export default class Block extends Component {
 
@@ -30,6 +31,7 @@ export default class Block extends Component {
     this._clearPlaceholder = ::this._clearPlaceholder;
     this._putPlaceholder = ::this._putPlaceholder;
     this.changeWidth = ::this.changeWidth;
+
     this.state = {
         placeholder: "Type caption here (optional)",
         open: false,
@@ -90,42 +92,32 @@ export default class Block extends Component {
         videoSrc: videoURL,
         load: false,
         file: null,
+        type: this.props.data.type,
       };
 
       this.props.container.updateData(data);
-
-      // var editorState = this.props.editorState;
-      // const _contentState = editorState.getCurrentContent();
-      // var blocks = editorState.getCurrentContent().getBlocksAsArray();
-
-      // var loadIndex = 0;
-      // var replaceKey = '';
-      // for (var i = 0; i < blocks.length; i++) {
-      //   if (blocks[i].getType() === 'atomic' && blocks[i].getData().get('load')) {
-      //     loadIndex = i;
-      //     replaceKey = blocks[i].getKey();
-      //     break;
-      //   }
-      // }
-      // var selectionState = SelectionState.createEmpty(replaceKey);
-      // var newContentState = Modifier.setBlockData(_contentState, selectionState, data);
-      // var newEditorState = EditorState.push(this.props.editorState, newContentState, 'replace-load-with-video');
-      // this.props.onChange(newEditorState);
-    })
+    });
   }
 
   componentDidMount() {
-    if (this.video)
-      this.video.click();
-    var readOnly = this.props.blockProps.getInitialReadOnly();
-    
-    // Only add the mousedown event if we're not readonly.
+    var readOnly = this.props.blockProps.getInitialReadOnly();      
+    // Only add the mousedown event if we're readonly.
     if (readOnly) {
       document.addEventListener('mousedown', this.handleClickOut);
     }
 
     if (!this.props.data.videoSrc) {
       this.uploadFile(this.props.data.file);
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.video && !this.state.videoClicked) {
+      this.video.click();
+      this.textArea.focus();
+      this.setState({
+        videoClicked: true,
+      });
     }
   }
 
@@ -169,9 +161,8 @@ export default class Block extends Component {
           </div>
           {readOnly && this.props.data.caption || !readOnly
             ?   <TextAreaAutoSize
-                  onFocus={this._clearPlaceholder}
-                  onBlur={this._putPlaceholder}
                   id='caption'
+                  inputRef={(ref) => this.textArea = ref}
                   rows={1}
                   disabled={readOnly}
                   placeholder={this.state.placeholder}

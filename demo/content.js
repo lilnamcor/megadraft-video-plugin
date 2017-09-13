@@ -12,23 +12,11 @@ export default {
   blocks: [
     {
       key: "ag6qs",
-      text: "megadraft-image-plugin - Megadraft Plugin",
+      text: "megadraft-video-plugin - Megadraft Plugin",
       type: "header-two",
       depth: 0,
       inlineStyleRanges: [],
       entityRanges: []
     },
-    {
-      key: "9vgd",
-      type: "atomic",
-      depth: 0,
-      inlineStyleRanges: [],
-      text: "",
-      data: {
-        type: constants.PLUGIN_TYPE,
-        caption: "Plugin caption"
-      },
-      entityRanges: []
-    }
   ]
 };

@@ -48,7 +48,7 @@ class Demo extends React.Component {
   }
 
   render() {
-    const pluginName = "megadraft-image-plugin";
+    const pluginName = "megadraft-video-plugin";
     return (
         <div className="content">
           <header>
@@ -56,7 +56,7 @@ class Demo extends React.Component {
           </header>
 
           <div className="editor">
-            <MegadraftEditor plugins={[createVideoPlugin({hello: 'goodbye', uploadFile: this.uploadFile, uploadCallback: this.uploadCallback})]} editorState={this.state.content} onChange={this.onChange} />
+            <MegadraftEditor plugins={[createVideoPlugin({uploadFile: this.uploadFile, uploadCallback: this.uploadCallback})]} editorState={this.state.content} onChange={this.onChange} />
           </div>
         </div>
     );
