@@ -30,13 +30,13 @@ export default class Button extends Component {
   }
 
   onDrop(acceptedFiles, rejectedFiles) {
-    if (acceptedFiles.length) {
-      const data = {
+    if (acceptedFiles.length > 0) {
+      const loader = {
         type: constants.PLUGIN_TYPE,
-        videoFile: acceptedFiles[0],
-        videoSrc: acceptedFiles[0].preview,
+        load: true,
+        file: acceptedFiles[0],
       }
-      this.props.onChange(insertDataBlock(this.props.editorState, data));
+      this.props.onChange(insertDataBlock(this.props.editorState, loader));
     } else {
       this.setState({open: true})
     }
@@ -48,7 +48,7 @@ export default class Button extends Component {
 
   render() {
     return (
-      <div>
+      <div className={css(styles.videoButton)}>
         <Dropzone
           className={this.props.className}
           onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles)}
@@ -93,6 +93,9 @@ var styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'black',
     zIndex: '2',
+  },
+  videoButton: {
+    marginLeft: '2px',
   },
   content: {
     position: 'absolute',

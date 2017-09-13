@@ -16,6 +16,8 @@ import {MegadraftPlugin, MegadraftIcons} from "megadraft";
 
 import {StyleSheet, css} from 'aphrodite';
 
+import Loader from 'halogen/PulseLoader';
+
 const {BlockContent, BlockData, BlockInput, CommonBlock} = MegadraftPlugin;
 
 
@@ -76,6 +78,41 @@ export default class Block extends Component {
     }
   }
 
+  /***
+   * Upload a file with the passed in upload file function
+   * @params file -- file object
+   */
+  uploadFile = (file) => {
+    this.props.blockProps.plugin.uploadFile(file)
+    .then((result) => {
+      var videoURL = this.props.blockProps.plugin.uploadCallback(result);
+      const data = {
+        videoSrc: videoURL,
+        load: false,
+      };
+
+      this.props.container.updateData(data);
+
+      // var editorState = this.props.editorState;
+      // const _contentState = editorState.getCurrentContent();
+      // var blocks = editorState.getCurrentContent().getBlocksAsArray();
+
+      // var loadIndex = 0;
+      // var replaceKey = '';
+      // for (var i = 0; i < blocks.length; i++) {
+      //   if (blocks[i].getType() === 'atomic' && blocks[i].getData().get('load')) {
+      //     loadIndex = i;
+      //     replaceKey = blocks[i].getKey();
+      //     break;
+      //   }
+      // }
+      // var selectionState = SelectionState.createEmpty(replaceKey);
+      // var newContentState = Modifier.setBlockData(_contentState, selectionState, data);
+      // var newEditorState = EditorState.push(this.props.editorState, newContentState, 'replace-load-with-video');
+      // this.props.onChange(newEditorState);
+    })
+  }
+
   componentDidMount() {
     if (this.video)
       this.video.click();
@@ -84,6 +121,10 @@ export default class Block extends Component {
     // Only add the mousedown event if we're not readonly.
     if (readOnly) {
       document.addEventListener('mousedown', this.handleClickOut);
+    }
+
+    if (!this.props.data.videoSrc) {
+      this.uploadFile(this.props.data.file);
     }
   }
 
@@ -95,45 +136,51 @@ export default class Block extends Component {
   render(){
     // TODO: what do we render if we don't have an video?
     var readOnly = this.props.blockProps.getInitialReadOnly();
+    var loadOptions = {
+      color: "#26A65B",
+      size: "16px",
+      margin: "4px",
+      ...this.props.blockProps.plugin.loadOptions,
+    }
     return (
       <div className={css(styles.inputWrapper)}>
-          {this.props.data.videoSrc
-            ?   <div className="block">
-                  <div className={css(styles.videoDiv)}>
-                    <Popover
-                      className={css(styles.popover)}
-                      body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
-                      preferPlace='above'
-                      place="column"
-                      onOuterAction={this.handleClick.bind(this)}
-                      isOpen={this.state.open}>
-                      <video
-                        src={this.props.data.videoSrc}
-                        ref={(video) => this.video = video}
-                        controls
-                        className={css(styles.video, this.state.focus && styles.focus)}
-                        style={{width:this.state.width}}
-                        onClick={readOnly ? null : this.handleClick.bind(this)}
-                      />
-                    </Popover>
-                  </div>
-                  {readOnly && this.props.data.caption || !readOnly
-                    ?   <TextAreaAutoSize
-                          onFocus={this._clearPlaceholder}
-                          onBlur={this._putPlaceholder}
-                          id='caption'
-                          rows={1}
-                          disabled={readOnly}
-                          placeholder={this.state.placeholder}
-                          className={css(styles.input)}
-                          onChange={this._handleCaptionChange}
-                          value={this.props.data.caption}
-                        />
-                    :   null
-                  }
-                </div>
-          :   null
-        }
+        <div className="block">
+          <div className={css(styles.videoDiv)}>
+            {this.props.data.videoSrc
+              ?   <Popover
+                    className={css(styles.popover)}
+                    body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
+                    preferPlace='above'
+                    place="column"
+                    onOuterAction={this.handleClick.bind(this)}
+                    isOpen={this.state.open}>
+                    <video
+                      src={this.props.data.videoSrc}
+                      ref={(video) => this.video = video}
+                      controls
+                      className={css(styles.video, this.state.focus && styles.focus)}
+                      style={{width:this.state.width}}
+                      onClick={readOnly ? null : this.handleClick.bind(this)}
+                    />
+                  </Popover>
+              :   <Loader {...loadOptions} />
+            }
+          </div>
+          {readOnly && this.props.data.caption || !readOnly
+            ?   <TextAreaAutoSize
+                  onFocus={this._clearPlaceholder}
+                  onBlur={this._putPlaceholder}
+                  id='caption'
+                  rows={1}
+                  disabled={readOnly}
+                  placeholder={this.state.placeholder}
+                  className={css(styles.input)}
+                  onChange={this._handleCaptionChange}
+                  value={this.props.data.caption}
+                />
+            :   null
+          }
+        </div>
       </div>
     );
   }

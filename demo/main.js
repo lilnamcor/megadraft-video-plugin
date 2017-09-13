@@ -9,7 +9,7 @@ import ReactDOM from "react-dom";
 import {MegadraftEditor} from "megadraft";
 import {editorStateFromRaw} from "megadraft/lib/utils";
 
-import plugin from "../src/plugin";
+import createVideoPlugin from "../src/plugin";
 
 import INITIAL_CONTENT from "./content";
 
@@ -21,10 +21,30 @@ class Demo extends React.Component {
       content: editorStateFromRaw(INITIAL_CONTENT)
     };
     this.onChange = ::this.onChange;
+    this.uploadFile = ::this.uploadFile;
   }
 
   onChange(content) {
     this.setState({content});
+  }
+
+  uploadFile(file) {
+    var data = new FormData();
+    data.append('ipfsfile', file)
+    return fetch('http://localhost:8080/ipfs-add', {
+      method: 'post',
+      body: data,
+    })
+    .then((result) => {
+      return result.json()
+      .then((json) => {
+        return json.hash
+      })
+    })
+  }
+
+  uploadCallback(hash) {
+    return `https://ipfs.io/ipfs/${hash}`
   }
 
   render() {
@@ -36,7 +56,7 @@ class Demo extends React.Component {
           </header>
 
           <div className="editor">
-            <MegadraftEditor plugins={[plugin]} editorState={this.state.content} onChange={this.onChange} />
+            <MegadraftEditor plugins={[createVideoPlugin({hello: 'goodbye', uploadFile: this.uploadFile, uploadCallback: this.uploadCallback})]} editorState={this.state.content} onChange={this.onChange} />
           </div>
         </div>
     );
