@@ -89,6 +89,7 @@ export default class Block extends Component {
       const data = {
         videoSrc: videoURL,
         load: false,
+        file: null,
       };
 
       this.props.container.updateData(data);
