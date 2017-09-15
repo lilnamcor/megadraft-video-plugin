@@ -112,7 +112,8 @@ export default class Block extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.video && !this.state.videoClicked) {
+
+    if (this.video && !this.state.videoClicked && !this.props.blockProps.getInitialReadOnly()) {
       this.video.click();
       this.textArea.focus();
       this.setState({
