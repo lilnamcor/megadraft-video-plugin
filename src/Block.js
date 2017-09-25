@@ -35,7 +35,6 @@ export default class Block extends Component {
     this.state = {
         placeholder: "Type caption here (optional)",
         open: false,
-        width: '75%',
         focus: false,
     }
 
@@ -68,7 +67,7 @@ export default class Block extends Component {
   }
 
   changeWidth(width) {
-    this.setState({width: width});
+    this.props.container.updateData({width: width});
   }
 
   handleClickOut = (e) => {
@@ -93,6 +92,7 @@ export default class Block extends Component {
         load: false,
         file: null,
         type: this.props.data.type,
+        width: '75%',
       };
 
       this.props.container.updateData(data);
@@ -143,7 +143,7 @@ export default class Block extends Component {
             {this.props.data.videoSrc
               ?   <Popover
                     className={css(styles.popover)}
-                    body={<VideoPopover changeWidth={this.changeWidth} width={this.state.width} />}
+                    body={<VideoPopover changeWidth={this.changeWidth} width={this.props.data.width} />}
                     preferPlace='above'
                     place="column"
                     onOuterAction={this.handleClick.bind(this)}
@@ -153,7 +153,7 @@ export default class Block extends Component {
                       ref={(video) => this.video = video}
                       controls
                       className={css(styles.video, this.state.focus && styles.focus)}
-                      style={{width:this.state.width}}
+                      style={{width:this.props.data.width}}
                       onClick={readOnly ? null : this.handleClick.bind(this)}
                     />
                   </Popover>
