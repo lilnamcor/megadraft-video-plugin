@@ -1,11 +1,11 @@
 {
   "name": "megadraft-video-plugin",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "megadraft-video-plugin",
   "main": "lib/plugin.js",
   "dependencies": {
     "aphrodite": "^1.2.3",
-    "halogen": "^0.2.0",
+    "halogenium": "^2.2.3",
     "megadraft": "^0.4.26",
     "react": "15.2.1",
     "react-dom": "15.2.1",
