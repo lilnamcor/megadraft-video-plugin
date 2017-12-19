@@ -21,7 +21,6 @@ module.exports = {
     "react": "React",
     "react-dom": "ReactDOM"
   },
-  devtool: "source-map",
   devServer: {
     inline: true,
     contentBase: "./"
@@ -47,7 +46,7 @@ module.exports = {
           // https://github.com/facebookincubator/create-react-app/issues/2488
           ascii_only: true,
         },
-        sourceMap: true,
+        sourceMap: false,
       }),
     ],
     loaders: [
