@@ -6,7 +6,7 @@
 
 import React from "react";
 
-import FaPlay from 'react-icons/lib/fa/play'
+import FaPlay from 'react-icons/lib/fa/play';
 
 export default class extends React.Component {
   render() {
