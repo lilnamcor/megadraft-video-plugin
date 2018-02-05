@@ -1,6 +1,6 @@
 {
   "name": "megadraft-video-plugin",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "megadraft-video-plugin",
   "main": "lib/plugin.js",
   "dependencies": {
